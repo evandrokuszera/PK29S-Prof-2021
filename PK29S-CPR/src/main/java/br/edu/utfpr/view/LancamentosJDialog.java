@@ -78,6 +78,12 @@ public class LancamentosJDialog extends javax.swing.JDialog {
 
         jLabel4.setText("Descrição:");
 
+        txtDescricao.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtDescricaoKeyReleased(evt);
+            }
+        });
+
         jLabel5.setText("Valor:");
 
         btnNovo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/new.png"))); // NOI18N
@@ -171,7 +177,12 @@ public class LancamentosJDialog extends javax.swing.JDialog {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void txtDescricaoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtDescricaoKeyReleased
+        this.setTitle("Lançamento - [" + txtDescricao.getText() + "]");
+    }//GEN-LAST:event_txtDescricaoKeyReleased
 
     /**
      * @param args the command line arguments

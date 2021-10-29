@@ -46,6 +46,12 @@ public class UsuarioJDialog extends javax.swing.JDialog {
 
         jLabel1.setText("Nome:");
 
+        txtNome.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtNomeKeyReleased(evt);
+            }
+        });
+
         jLabel2.setText("Login:");
 
         jLabel3.setText("Senha:");
@@ -122,7 +128,12 @@ public class UsuarioJDialog extends javax.swing.JDialog {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void txtNomeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNomeKeyReleased
+        this.setTitle("Usuário - [" + txtNome.getText() + "]");
+    }//GEN-LAST:event_txtNomeKeyReleased
 
     /**
      * @param args the command line arguments

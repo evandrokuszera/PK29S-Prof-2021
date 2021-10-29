@@ -52,6 +52,8 @@ public class PrincipalJFrame extends javax.swing.JFrame {
         mniSobre = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Controle de Contas a Pagar e Receber");
+        setExtendedState(6);
 
         jToolBar2.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         jToolBar2.setRollover(true);
@@ -64,6 +66,11 @@ public class PrincipalJFrame extends javax.swing.JFrame {
         btnCategorias.setFocusable(false);
         btnCategorias.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnCategorias.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnCategorias.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCategoriasActionPerformed(evt);
+            }
+        });
         jToolBar2.add(btnCategorias);
 
         btnUsuarios.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/user.png"))); // NOI18N
@@ -71,6 +78,11 @@ public class PrincipalJFrame extends javax.swing.JFrame {
         btnUsuarios.setFocusable(false);
         btnUsuarios.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnUsuarios.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnUsuarios.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUsuariosActionPerformed(evt);
+            }
+        });
         jToolBar2.add(btnUsuarios);
 
         btnLancamentos.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/money.png"))); // NOI18N
@@ -78,24 +90,49 @@ public class PrincipalJFrame extends javax.swing.JFrame {
         btnLancamentos.setFocusable(false);
         btnLancamentos.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnLancamentos.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnLancamentos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLancamentosActionPerformed(evt);
+            }
+        });
         jToolBar2.add(btnLancamentos);
 
         jMenu1.setText("Operações");
 
         mniCategorias.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/categories16.png"))); // NOI18N
         mniCategorias.setText("Categorias");
+        mniCategorias.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniCategoriasActionPerformed(evt);
+            }
+        });
         jMenu1.add(mniCategorias);
 
         mniUsuarios.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/user16.png"))); // NOI18N
         mniUsuarios.setText("Usuários");
+        mniUsuarios.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniUsuariosActionPerformed(evt);
+            }
+        });
         jMenu1.add(mniUsuarios);
 
         mniLancamentos.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/money16.png"))); // NOI18N
         mniLancamentos.setText("Lançamentos");
+        mniLancamentos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniLancamentosActionPerformed(evt);
+            }
+        });
         jMenu1.add(mniLancamentos);
         jMenu1.add(jSeparator1);
 
         mniSair.setText("Sair");
+        mniSair.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniSairActionPerformed(evt);
+            }
+        });
         jMenu1.add(mniSair);
 
         jMenuBar1.add(jMenu1);
@@ -122,8 +159,40 @@ public class PrincipalJFrame extends javax.swing.JFrame {
                 .addGap(0, 218, Short.MAX_VALUE))
         );
 
-        pack();
+        setSize(new java.awt.Dimension(502, 339));
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void mniSairActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniSairActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_mniSairActionPerformed
+
+    private void mniCategoriasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniCategoriasActionPerformed
+        CategoriaJDialog janela = new CategoriaJDialog(this, true);
+        janela.setVisible(true);
+    }//GEN-LAST:event_mniCategoriasActionPerformed
+
+    private void mniUsuariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniUsuariosActionPerformed
+        UsuarioJDialog janela = new UsuarioJDialog(this, true);
+        janela.setVisible(true);
+    }//GEN-LAST:event_mniUsuariosActionPerformed
+
+    private void mniLancamentosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniLancamentosActionPerformed
+        LancamentosJDialog janela = new LancamentosJDialog(this, true);
+        janela.setVisible(true);
+    }//GEN-LAST:event_mniLancamentosActionPerformed
+
+    private void btnCategoriasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCategoriasActionPerformed
+        mniCategoriasActionPerformed(null);
+    }//GEN-LAST:event_btnCategoriasActionPerformed
+
+    private void btnUsuariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuariosActionPerformed
+        mniUsuariosActionPerformed(null);
+    }//GEN-LAST:event_btnUsuariosActionPerformed
+
+    private void btnLancamentosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLancamentosActionPerformed
+        mniLancamentosActionPerformed(null);
+    }//GEN-LAST:event_btnLancamentosActionPerformed
 
     /**
      * @param args the command line arguments

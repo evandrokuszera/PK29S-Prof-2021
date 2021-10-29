@@ -5,6 +5,8 @@
  */
 package br.edu.utfpr.view;
 
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author evand
@@ -17,6 +19,8 @@ public class LoginJDialog extends javax.swing.JDialog {
     public LoginJDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        this.getRootPane().setDefaultButton(btnOk);
     }
 
     /**
@@ -45,9 +49,19 @@ public class LoginJDialog extends javax.swing.JDialog {
 
         btnOk.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/ok16.png"))); // NOI18N
         btnOk.setText("Ok");
+        btnOk.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOkActionPerformed(evt);
+            }
+        });
 
         btnCancel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/cancel16.png"))); // NOI18N
         btnCancel.setText("Cancel");
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -90,7 +104,23 @@ public class LoginJDialog extends javax.swing.JDialog {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
+        if (txtLogin.getText().equals("admin") && txtPassword.getText().equals("admin")){
+            PrincipalJFrame janelaPrincipal = new PrincipalJFrame();
+            janelaPrincipal.setVisible(true);
+            this.dispose();
+            janelaPrincipal.requestFocus();
+        } else {
+            JOptionPane.showMessageDialog(this, "Erro: login ou password incorretos!");
+        }
+    }//GEN-LAST:event_btnOkActionPerformed
+
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_btnCancelActionPerformed
 
     /**
      * @param args the command line arguments
