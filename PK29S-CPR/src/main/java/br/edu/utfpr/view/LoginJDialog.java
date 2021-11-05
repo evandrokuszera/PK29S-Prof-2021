@@ -5,6 +5,7 @@
  */
 package br.edu.utfpr.view;
 
+import br.edu.utfpr.main.Main;
 import javax.swing.JOptionPane;
 
 /**
@@ -12,7 +13,7 @@ import javax.swing.JOptionPane;
  * @author evand
  */
 public class LoginJDialog extends javax.swing.JDialog {
-
+    private boolean cancel = true;
     /**
      * Creates new form LoginJDialog
      */
@@ -40,6 +41,11 @@ public class LoginJDialog extends javax.swing.JDialog {
         btnCancel = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
         jLabel1.setText("Login:");
@@ -108,9 +114,10 @@ public class LoginJDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
-        if (txtLogin.getText().equals("admin") && txtPassword.getText().equals("admin")){
+        if ( Main.executarLogin(txtLogin.getText(), txtPassword.getText()) ){
             PrincipalJFrame janelaPrincipal = new PrincipalJFrame();
             janelaPrincipal.setVisible(true);
+            cancel = false;
             this.dispose();
             janelaPrincipal.requestFocus();
         } else {
@@ -119,8 +126,16 @@ public class LoginJDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_btnOkActionPerformed
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+        Main.fecharConexao();
         System.exit(0);
     }//GEN-LAST:event_btnCancelActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        if (cancel == true){
+            Main.fecharConexao();
+        }
+        
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments
