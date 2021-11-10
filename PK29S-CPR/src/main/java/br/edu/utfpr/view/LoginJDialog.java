@@ -22,6 +22,7 @@ public class LoginJDialog extends javax.swing.JDialog {
         initComponents();
         
         this.getRootPane().setDefaultButton(btnOk);
+        
     }
 
     /**

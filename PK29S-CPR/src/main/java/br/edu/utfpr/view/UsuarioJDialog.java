@@ -5,18 +5,42 @@
  */
 package br.edu.utfpr.view;
 
+import br.edu.utfpr.main.Main;
+import br.edu.utfpr.model.Usuario;
+import java.util.List;
+import javax.persistence.TypedQuery;
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author evand
  */
 public class UsuarioJDialog extends javax.swing.JDialog {
-
+    private DefaultListModel<Usuario> modeloLista = new DefaultListModel<>();
+    private Usuario usuarioSelecionado;
+    
     /**
      * Creates new form UsuarioJDialog
      */
     public UsuarioJDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        this.lstUsuarios.setModel(modeloLista);
+        carregarListaUsuarios();
+    }
+    
+    private void carregarListaUsuarios(){
+        modeloLista.removeAllElements();
+        
+        String jpql = "select u from Usuario u";
+        TypedQuery<Usuario> query = Main.em.createQuery(jpql, Usuario.class);
+        
+        List<Usuario> usuarioList = query.getResultList();
+        for (Usuario u : usuarioList){
+            modeloLista.addElement( u );
+        }
     }
 
     /**
@@ -60,19 +84,34 @@ public class UsuarioJDialog extends javax.swing.JDialog {
 
         btnNovo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/new.png"))); // NOI18N
         btnNovo.setText("Novo");
+        btnNovo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNovoActionPerformed(evt);
+            }
+        });
 
         btnSalvar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/save16.png"))); // NOI18N
         btnSalvar.setText("Salvar");
+        btnSalvar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSalvarActionPerformed(evt);
+            }
+        });
 
-        lstUsuarios.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
+        lstUsuarios.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lstUsuariosMouseClicked(evt);
+            }
         });
         jScrollPane1.setViewportView(lstUsuarios);
 
         btnRemover.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/remove16.png"))); // NOI18N
         btnRemover.setText("Remover");
+        btnRemover.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoverActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -135,6 +174,89 @@ public class UsuarioJDialog extends javax.swing.JDialog {
         this.setTitle("Usuário - [" + txtNome.getText() + "]");
     }//GEN-LAST:event_txtNomeKeyReleased
 
+    private void lstUsuariosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lstUsuariosMouseClicked
+        if (lstUsuarios.getSelectedIndex() != -1){
+            usuarioSelecionado = modeloLista.getElementAt( lstUsuarios.getSelectedIndex() );
+            
+            this.txtLogin.setText(usuarioSelecionado.getLogin());
+            this.txtNome.setText(usuarioSelecionado.getNome());
+            this.txtSenha.setText(usuarioSelecionado.getPassword());
+            this.chkAdmin.setSelected(usuarioSelecionado.isAdmin());
+        }
+    }//GEN-LAST:event_lstUsuariosMouseClicked
+
+    private void btnNovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNovoActionPerformed
+        this.txtLogin.setText("");
+        this.txtNome.setText("");
+        this.txtSenha.setText("");
+        this.chkAdmin.setSelected(false);
+        usuarioSelecionado = null;
+        lstUsuarios.clearSelection();
+    }//GEN-LAST:event_btnNovoActionPerformed
+
+    private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
+        if (txtNome.getText().length() == 0){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: nome é campo obrigatório!");
+            return;
+        } else if (txtLogin.getText().length() == 0){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: login é campo obrigatório!");
+            return;
+        } else if (txtSenha.getText().length() == 0){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: senha é campo obrigatório!");
+            return;
+        }
+        
+        boolean novo = false;
+        if (usuarioSelecionado == null){
+            novo = true;
+            usuarioSelecionado = new Usuario();
+        }
+        
+        usuarioSelecionado.setAdmin(this.chkAdmin.isSelected());
+        usuarioSelecionado.setLogin(txtLogin.getText());
+        usuarioSelecionado.setPassword(txtSenha.getText());
+        usuarioSelecionado.setNome(txtNome.getText());
+        
+        Main.em.getTransaction().begin();
+        if (novo){
+            Main.em.persist(usuarioSelecionado);
+            JOptionPane.showMessageDialog(this, "Usuario adicionado na base de dados.");
+        } else {
+            Main.em.merge(usuarioSelecionado);
+            JOptionPane.showMessageDialog(this, "Usuario alterado na base de dados.");
+        }
+        Main.em.getTransaction().commit();
+        
+        carregarListaUsuarios();
+    }//GEN-LAST:event_btnSalvarActionPerformed
+
+    private void btnRemoverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoverActionPerformed
+        if (lstUsuarios.getSelectedIndex() != -1){
+            
+            if (usuarioSelecionado.getId() == Main.usuarioLogado.getId()){
+                JOptionPane.showMessageDialog(this, "Erro: não é possível remover o Usuário Logado!");
+                return;
+            }
+            
+            int result = JOptionPane.showConfirmDialog(this,
+                    "Deseja remover usuário " + usuarioSelecionado.getNome() + " ?",
+                    "Remoção",
+                    JOptionPane.YES_NO_OPTION);
+            
+            if (result == JOptionPane.YES_OPTION){
+                Main.em.getTransaction().begin();
+                Main.em.remove(usuarioSelecionado);
+                Main.em.getTransaction().commit();
+                carregarListaUsuarios();
+            }
+            
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecione um usuário da lista para remover!");
+        }
+        
+        
+    }//GEN-LAST:event_btnRemoverActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -186,7 +308,7 @@ public class UsuarioJDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JList<String> lstUsuarios;
+    private javax.swing.JList<Usuario> lstUsuarios;
     private javax.swing.JTextField txtLogin;
     private javax.swing.JTextField txtNome;
     private javax.swing.JTextField txtSenha;

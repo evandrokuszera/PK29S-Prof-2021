@@ -13,7 +13,6 @@ import javax.swing.ImageIcon;
  * @author evand
  */
 public class PrincipalJFrame extends javax.swing.JFrame {
-
     /**
      * Creates new form PrincipalJFrame
      */
