@@ -5,20 +5,113 @@
  */
 package br.edu.utfpr.view;
 
+import br.edu.utfpr.main.Main;
+import br.edu.utfpr.model.Categoria;
+import br.edu.utfpr.model.Lancamento;
+import br.edu.utfpr.model.TipoLancamento;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import javax.persistence.TypedQuery;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author evand
  */
 public class LancamentosJDialog extends javax.swing.JDialog {
-
+    private DefaultTableModel modeloTabela = new DefaultTableModel();
+    private Lancamento lancamentoSelecionado;
     /**
      * Creates new form LancamentosJDialog
      */
     public LancamentosJDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        modeloTabela = (DefaultTableModel) tblLancamentos.getModel();
+        
+        carregarListaDeCategorias();
+        carregarListaDeLancamentos();
     }
 
+    private void carregarListaDeCategorias(){
+        cmbCategoria.removeAllItems();
+        
+        String jpql = "select c from Categoria c where c.usuario.id = :idUsuario";
+        TypedQuery query = Main.em.createQuery(jpql, Categoria.class);
+        query.setParameter("idUsuario", Main.usuarioLogado.getId());
+        
+        List<Categoria> lista = query.getResultList();
+        for (Categoria c : lista){
+            cmbCategoria.addItem(c);
+        }
+    }
+    
+    private void carregarListaDeLancamentos(){
+        // remover linhas existentes da JTable
+        while (tblLancamentos.getRowCount() > 0){
+            modeloTabela.removeRow(0);
+        }
+        
+        String jpql = "select l from Lancamento l where l.usuario.id = :idUsuario";
+        TypedQuery query = Main.em.createQuery(jpql, Lancamento.class);
+        query.setParameter("idUsuario", Main.usuarioLogado.getId());
+        
+        List<Lancamento> lista = query.getResultList();
+        for (Lancamento l : lista){
+            Object row[] = {
+                l.getId(),
+                l.getLancamento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                l.getVencimento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                l.getTipo(),
+                l.getCategoria().getNome(),
+                l.getDescricao(),
+                l.getValor()           
+            };
+            modeloTabela.addRow(row);
+        }
+        
+    }
+    
+    private boolean validarCampos(){
+        
+        if (txtDescricao.getText().length() == 0){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: campo descrição é obrigatório.");
+            return false;
+        }
+        
+        if (txtLancamento.getText().length() == 0){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: campo lançamento é obrigatório.");
+            return false;
+        }
+        
+        if (txtVencimento.getText().length() == 0){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: campo vencimento é obrigatório.");
+            return false;
+        }
+        
+        if (this.ftxValor.getText().length() == 0){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: campo valor é obrigatório.");
+            return false;
+        }
+        
+        if (cmbCategoria.getSelectedIndex() == -1){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: campo categoria é obrigatório.");
+            return false;
+        }
+        
+        LocalDate lanc = LocalDate.parse( txtLancamento.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy") );
+        LocalDate venc = LocalDate.parse( txtVencimento.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy") );
+        if (lanc.isAfter(venc)){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: campo lançamento deve ser menor que vencimento.");
+            return false;
+        }
+        
+        return true;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -29,10 +122,10 @@ public class LancamentosJDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         jScrollPane2 = new javax.swing.JScrollPane();
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblLancamentos = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
-        txtLancamento = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         radioPagar = new javax.swing.JRadioButton();
         radioReceber = new javax.swing.JRadioButton();
@@ -46,35 +139,42 @@ public class LancamentosJDialog extends javax.swing.JDialog {
         btnSalvar = new javax.swing.JButton();
         btnRemover = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
-        txtVencimento = new javax.swing.JTextField();
+        txtLancamento = new javax.swing.JFormattedTextField();
+        txtVencimento = new javax.swing.JFormattedTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Lançamentos");
 
         tblLancamentos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
             },
             new String [] {
-                "Lançamento", "Vencimento", "Tipo", "Categoria", "Descrição", "Valor"
+                "Id", "Lançamento", "Vencimento", "Tipo", "Categoria", "Descrição", "Valor"
             }
         ));
+        tblLancamentos.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblLancamentosMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblLancamentos);
 
         jLabel1.setText("Lançamento:");
 
         jLabel2.setText("Tipo:");
 
+        buttonGroup1.add(radioPagar);
+        radioPagar.setSelected(true);
         radioPagar.setText("Pagar");
 
+        buttonGroup1.add(radioReceber);
         radioReceber.setText("Receber");
 
         jLabel3.setText("Categoria:");
-
-        cmbCategoria.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel4.setText("Descrição:");
 
@@ -86,16 +186,37 @@ public class LancamentosJDialog extends javax.swing.JDialog {
 
         jLabel5.setText("Valor:");
 
+        ftxValor.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
+
         btnNovo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/new.png"))); // NOI18N
         btnNovo.setText("Novo");
+        btnNovo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNovoActionPerformed(evt);
+            }
+        });
 
         btnSalvar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/save16.png"))); // NOI18N
         btnSalvar.setText("Salvar");
+        btnSalvar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSalvarActionPerformed(evt);
+            }
+        });
 
         btnRemover.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/remove16.png"))); // NOI18N
         btnRemover.setText("Remover");
+        btnRemover.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoverActionPerformed(evt);
+            }
+        });
 
         jLabel6.setText("Vencimento:");
+
+        txtLancamento.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT))));
+
+        txtVencimento.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT))));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -126,13 +247,13 @@ public class LancamentosJDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtLancamento, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ftxValor, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(ftxValor, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtLancamento, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtVencimento, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(49, 49, 49)
+                        .addComponent(txtVencimento, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(53, 53, 53)
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(radioPagar)
@@ -148,12 +269,12 @@ public class LancamentosJDialog extends javax.swing.JDialog {
                 .addGap(15, 15, 15)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(txtLancamento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtVencimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6)
                     .addComponent(jLabel2)
                     .addComponent(radioPagar)
-                    .addComponent(radioReceber))
+                    .addComponent(radioReceber)
+                    .addComponent(txtLancamento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtVencimento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cmbCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -172,7 +293,7 @@ public class LancamentosJDialog extends javax.swing.JDialog {
                     .addComponent(btnSalvar)
                     .addComponent(btnRemover))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -183,6 +304,105 @@ public class LancamentosJDialog extends javax.swing.JDialog {
     private void txtDescricaoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtDescricaoKeyReleased
         this.setTitle("Lançamento - [" + txtDescricao.getText() + "]");
     }//GEN-LAST:event_txtDescricaoKeyReleased
+
+    private void tblLancamentosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblLancamentosMouseClicked
+        if (tblLancamentos.getSelectedRow() != -1){
+            Long id = (Long) modeloTabela.getValueAt(tblLancamentos.getSelectedRow(), 0);
+            
+            lancamentoSelecionado = Main.em.find(Lancamento.class, id);
+            
+            txtVencimento.setText(lancamentoSelecionado.getVencimento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            txtLancamento.setText(lancamentoSelecionado.getLancamento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            txtDescricao.setText(lancamentoSelecionado.getDescricao());
+            this.ftxValor.setText(String.valueOf(lancamentoSelecionado.getValor()));
+            
+            cmbCategoria.setSelectedItem(lancamentoSelecionado.getCategoria());
+            
+            if (lancamentoSelecionado.getTipo() == TipoLancamento.PAGAR){
+                radioPagar.setSelected(true);
+            } else {
+                radioReceber.setSelected(true);
+            }
+        }
+    }//GEN-LAST:event_tblLancamentosMouseClicked
+
+    private void btnNovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNovoActionPerformed
+        txtDescricao.setText("");
+        txtLancamento.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        txtVencimento.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        this.cmbCategoria.setSelectedIndex(0);
+        this.ftxValor.setValue(0);
+        this.radioPagar.setSelected(true);
+        
+        tblLancamentos.clearSelection();
+        lancamentoSelecionado = null;
+    }//GEN-LAST:event_btnNovoActionPerformed
+
+    private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
+        boolean novo = false;
+        
+        // validação dos campos
+        if (validarCampos() == false){
+            return;
+        }
+        
+        if (lancamentoSelecionado == null){
+            novo = true;
+            lancamentoSelecionado = new Lancamento();
+        }
+        
+        lancamentoSelecionado.setDescricao(txtDescricao.getText());
+        lancamentoSelecionado.setUsuario(Main.usuarioLogado);
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        lancamentoSelecionado.setLancamento( LocalDate.parse( txtLancamento.getText(), formatter  ));
+        lancamentoSelecionado.setVencimento( LocalDate.parse( txtVencimento.getText(), formatter  ));
+        
+        Categoria categoriaSelecionada = cmbCategoria.getItemAt( cmbCategoria.getSelectedIndex()  );
+        lancamentoSelecionado.setCategoria(  categoriaSelecionada  );
+        
+        if (radioPagar.isSelected()){
+            lancamentoSelecionado.setTipo(TipoLancamento.PAGAR);
+        } else {
+            lancamentoSelecionado.setTipo(TipoLancamento.RECEBER);
+        }
+        
+        String valorString = String.valueOf(ftxValor.getValue());
+        lancamentoSelecionado.setValor( Double.parseDouble(valorString) );
+        
+        Main.em.getTransaction().begin();
+        if (novo){
+            Main.em.persist(lancamentoSelecionado);
+        } else {
+            Main.em.merge(lancamentoSelecionado);
+        }
+        Main.em.getTransaction().commit();
+        
+        carregarListaDeLancamentos();
+    }//GEN-LAST:event_btnSalvarActionPerformed
+
+    private void btnRemoverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoverActionPerformed
+        if (tblLancamentos.getSelectedRow() != -1){
+            Long id = (Long) modeloTabela.getValueAt(tblLancamentos.getSelectedRow(), 0);
+            lancamentoSelecionado = Main.em.find(Lancamento.class, id);
+            
+            int result = JOptionPane.showConfirmDialog(this, 
+                    "Deseja remover o lançamento " + lancamentoSelecionado.getDescricao() + " ?", 
+                    "Remoção", 
+                    JOptionPane.YES_NO_OPTION);
+            
+            if (result == JOptionPane.YES_OPTION){
+                Main.em.getTransaction().begin();
+                Main.em.remove(lancamentoSelecionado);
+                Main.em.getTransaction().commit();
+                
+                carregarListaDeLancamentos();
+                btnNovoActionPerformed(null);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecione um registro para remover.");
+        }
+    }//GEN-LAST:event_btnRemoverActionPerformed
 
     /**
      * @param args the command line arguments
@@ -230,7 +450,8 @@ public class LancamentosJDialog extends javax.swing.JDialog {
     private javax.swing.JButton btnNovo;
     private javax.swing.JButton btnRemover;
     private javax.swing.JButton btnSalvar;
-    private javax.swing.JComboBox<String> cmbCategoria;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JComboBox<Categoria> cmbCategoria;
     private javax.swing.JFormattedTextField ftxValor;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -244,7 +465,7 @@ public class LancamentosJDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton radioReceber;
     private javax.swing.JTable tblLancamentos;
     private javax.swing.JTextField txtDescricao;
-    private javax.swing.JTextField txtLancamento;
-    private javax.swing.JTextField txtVencimento;
+    private javax.swing.JFormattedTextField txtLancamento;
+    private javax.swing.JFormattedTextField txtVencimento;
     // End of variables declaration//GEN-END:variables
 }
