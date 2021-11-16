@@ -5,18 +5,43 @@
  */
 package br.edu.utfpr.view;
 
+import br.edu.utfpr.main.Main;
+import br.edu.utfpr.model.Categoria;
+import java.util.List;
+import javax.persistence.TypedQuery;
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author evand
  */
 public class CategoriaJDialog extends javax.swing.JDialog {
-
+    private DefaultListModel modeloListaCategorias = new DefaultListModel();
+    private Categoria categoriaSelecionada;
     /**
      * Creates new form CategoriaJDialog
      */
     public CategoriaJDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
+        this.lstCategorias.setModel(modeloListaCategorias);
+        carregarListaCategorias();
+    }
+    
+    private void carregarListaCategorias(){
+        modeloListaCategorias.removeAllElements();
+        
+        String jpql = "select c from Categoria c where c.usuario.id = :idUsuario";
+        TypedQuery<Categoria> query = Main.em.createQuery(jpql, Categoria.class);
+        query.setParameter("idUsuario", Main.usuarioLogado.getId());
+        
+        List<Categoria> categorias = query.getResultList();
+        
+        for (Categoria c : categorias){
+            modeloListaCategorias.addElement( c );
+        }
     }
 
     /**
@@ -39,10 +64,10 @@ public class CategoriaJDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Categorias");
 
-        lstCategorias.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
+        lstCategorias.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lstCategoriasMouseClicked(evt);
+            }
         });
         jScrollPane1.setViewportView(lstCategorias);
 
@@ -56,12 +81,27 @@ public class CategoriaJDialog extends javax.swing.JDialog {
 
         btnSalvar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/save16.png"))); // NOI18N
         btnSalvar.setText("Salvar");
+        btnSalvar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSalvarActionPerformed(evt);
+            }
+        });
 
         btnRemover.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/remove16.png"))); // NOI18N
         btnRemover.setText("Remover");
+        btnRemover.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoverActionPerformed(evt);
+            }
+        });
 
         btnNovo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/new.png"))); // NOI18N
         btnNovo.setText("Novo");
+        btnNovo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNovoActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -107,6 +147,67 @@ public class CategoriaJDialog extends javax.swing.JDialog {
     private void txtNomeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNomeKeyReleased
         this.setTitle("Categoria - [" + txtNome.getText() + "]");
     }//GEN-LAST:event_txtNomeKeyReleased
+
+    private void lstCategoriasMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lstCategoriasMouseClicked
+        if (lstCategorias.getSelectedIndex() != -1){
+            categoriaSelecionada = (Categoria) modeloListaCategorias.getElementAt( lstCategorias.getSelectedIndex() );
+            
+            txtNome.setText( categoriaSelecionada.getNome() );
+        }
+    }//GEN-LAST:event_lstCategoriasMouseClicked
+
+    private void btnNovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNovoActionPerformed
+        txtNome.setText("");
+        categoriaSelecionada = null;
+        lstCategorias.clearSelection();
+    }//GEN-LAST:event_btnNovoActionPerformed
+
+    private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
+        if (txtNome.getText().trim().length() == 0){
+            JOptionPane.showMessageDialog(this, "Impossível salvar: campo nome é obrigatório.");
+            return;
+        }
+        
+        boolean novo = false;
+        if (categoriaSelecionada == null){
+            novo = true;
+            categoriaSelecionada = new Categoria();
+        }
+        
+        categoriaSelecionada.setNome(txtNome.getText());
+        categoriaSelecionada.setUsuario(Main.usuarioLogado);
+        
+        Main.em.getTransaction().begin();
+        if (novo){
+            Main.em.persist(categoriaSelecionada);
+            JOptionPane.showMessageDialog(this, "Categoria adicionada na base de dados.");
+        } else {
+            Main.em.merge(categoriaSelecionada);
+            JOptionPane.showMessageDialog(this, "Categoria alterada na base de dados.");
+        }
+        Main.em.getTransaction().commit();
+        carregarListaCategorias();
+    }//GEN-LAST:event_btnSalvarActionPerformed
+
+    private void btnRemoverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoverActionPerformed
+        if (lstCategorias.getSelectedIndex() != -1){
+            int result = JOptionPane.showConfirmDialog(this, 
+                    "Deseja remover a categoria " + categoriaSelecionada.getNome() + " ?", 
+                    "Remoção", 
+                    JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION){
+                Main.em.getTransaction().begin();
+                Main.em.remove(categoriaSelecionada);
+                Main.em.getTransaction().commit();
+                
+                carregarListaCategorias();
+                btnNovoActionPerformed(null);
+            }
+            
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecione uma Categoria da lista para remover.");
+        }
+    }//GEN-LAST:event_btnRemoverActionPerformed
 
     /**
      * @param args the command line arguments
@@ -156,7 +257,7 @@ public class CategoriaJDialog extends javax.swing.JDialog {
     private javax.swing.JButton btnSalvar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JList<String> lstCategorias;
+    private javax.swing.JList<Categoria> lstCategorias;
     private javax.swing.JTextField txtNome;
     // End of variables declaration//GEN-END:variables
 }
