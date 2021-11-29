@@ -5,6 +5,7 @@
  */
 package br.edu.utfpr.view;
 
+import br.edu.utfpr.report.ReportJDialog;
 import java.io.File;
 import javax.swing.ImageIcon;
 
@@ -45,6 +46,7 @@ public class PrincipalJFrame extends javax.swing.JFrame {
         mniCategorias = new javax.swing.JMenuItem();
         mniUsuarios = new javax.swing.JMenuItem();
         mniLancamentos = new javax.swing.JMenuItem();
+        mniRelatorios = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         mniSair = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
@@ -124,6 +126,14 @@ public class PrincipalJFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(mniLancamentos);
+
+        mniRelatorios.setText("Relatórios");
+        mniRelatorios.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniRelatoriosActionPerformed(evt);
+            }
+        });
+        jMenu1.add(mniRelatorios);
         jMenu1.add(jSeparator1);
 
         mniSair.setText("Sair");
@@ -193,6 +203,11 @@ public class PrincipalJFrame extends javax.swing.JFrame {
         mniLancamentosActionPerformed(null);
     }//GEN-LAST:event_btnLancamentosActionPerformed
 
+    private void mniRelatoriosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniRelatoriosActionPerformed
+        ReportJDialog janela = new ReportJDialog(this, true);
+        janela.setVisible(true);
+    }//GEN-LAST:event_mniRelatoriosActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -241,6 +256,7 @@ public class PrincipalJFrame extends javax.swing.JFrame {
     private javax.swing.JToolBar jToolBar2;
     private javax.swing.JMenuItem mniCategorias;
     private javax.swing.JMenuItem mniLancamentos;
+    private javax.swing.JMenuItem mniRelatorios;
     private javax.swing.JMenuItem mniSair;
     private javax.swing.JMenuItem mniSobre;
     private javax.swing.JMenuItem mniUsuarios;
