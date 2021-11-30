@@ -212,12 +212,12 @@ public class ReportJDialog extends javax.swing.JDialog {
             
             List<Lancamento> lista = query.getResultList();
             
-//            Report.jrxml_file = "Lancamentos.xml";
-//            if (chkCategoria.isSelected()){
-//                Report.jrxml_file = "LancamentosAgrupadosPorCategorias.jrxml";
-//            }
+            if (chkCategoria.isSelected()){
+                Report.createReport(lista, "LancamentosPorCategoria.xml");
+            } else {
+                Report.createReport(lista, "Lancamentos.xml");
+            }
 
-            Report.createReport(lista, "Lancamentos.xml");
             this.dispose();
         } catch (JRException ex) {
             JOptionPane.showMessageDialog(this, ex);
